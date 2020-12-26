@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
 
 import {
   TextField,
@@ -10,7 +10,12 @@ import {
   Select,
   MenuItem,
 } from '@material-ui/core'
-
+import { ExpenseTrackerContext } from '../../../context/context'
+import { v4 as uuidv4 } from 'uuid'
+import {
+  incomeCategories,
+  expenseCategories,
+} from '../../../constants/categories'
 import useStyles from './styles'
 const initialState = {
   amount: '',
@@ -22,7 +27,22 @@ const initialState = {
 const Form = () => {
   const classes = useStyles()
   const [formData, setFormData] = useState(initialState)
-  console.log(formData)
+  const { addTransaction } = useContext(ExpenseTrackerContext)
+
+  const createTransanction = () => {
+    const transaction = {
+      ...formData,
+      amount: Number(formData.amount),
+      id: uuidv4(),
+    }
+
+    addTransaction(transaction)
+    setFormData(initialState)
+  }
+
+  const selectedCategories =
+    formData.type === 'Income' ? incomeCategories : expenseCategories
+
   return (
     <Grid container spacing={2}>
       <Grid item xs={12}>
@@ -53,8 +73,11 @@ const Form = () => {
               setFormData({ ...formData, category: e.target.value })
             }
           >
-            <MenuItem value="Business">Business</MenuItem>
-            <MenuItem value="Salary">Salary</MenuItem>
+            {selectedCategories.map((c) => (
+              <MenuItem key={c.type} value={c.type}>
+                {c.type}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
       </Grid>
@@ -81,6 +104,7 @@ const Form = () => {
         variant="outlined"
         color="primary"
         fullWidth
+        onClick={createTransanction}
       >
         Create
       </Button>
